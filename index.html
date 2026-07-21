@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Digital Flower</title>
+  <title>To Akane — A Letter</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Playfair+Display:ital@0;1&display=swap"
     rel="stylesheet" />
@@ -678,7 +678,7 @@
         flowerActive = true;
         // Small delay so the fade-in starts after caption swap begins
         setTimeout(() => canvas.classList.add('flower-visible'), 80);
-        
+
         // Play music when flower appears
         window.bgMusic.play().catch(e => console.log('Autoplay blocked:', e));
       } else {
@@ -687,7 +687,7 @@
         flowerActive = false;
         // Reset so next flower visit blooms fresh
         t = 0;
-        
+
         // Pause music if we go back to the first slide
         if (window.bgMusic) window.bgMusic.pause();
       }
