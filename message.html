@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>For You ♡</title>
+    <title>To Akane — A Letter</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -461,42 +461,6 @@
                 date: today,
                 salutation: 'hey, Claue —',
                 body:
-                    `i don't say this enough,
-so let me say it here, like this,
-where i can take my time
-and actually mean every word.
-
-you are one of the rare people
-who makes the world feel softer
-just by being in it.`,
-                closing: 'with all the warmth i have,',
-                sig: '— yours'
-            },
-            {
-                tag: 'page two',
-                date: today,
-                salutation: 'there are things i notice —',
-                body:
-                    `the way you laugh
-when something really catches you off guard,
-and your voice is very unique and cute.
-
-the way you care,
-quietly, without asking for credit.
-
-the way you show up
-even when it costs you something.
-
-those things don't go unnoticed.
-i see them. i keep them.`,
-                closing: 'still paying attention,',
-                sig: '— me'
-            },
-            {
-                tag: 'page three',
-                date: today,
-                salutation: 'and one more thing —',
-                body:
                     `i saw your repost.
 i genuinely wish i could do what they did.
 
@@ -512,22 +476,80 @@ that you're appreciated.
 that someone out here thinks about you
 more than you probably know.`,
                 closing: 'hope this made you smile, even a little.',
-                sig: '— 🌸'
-            }
+                sig: ' — LARK!N'
+            },
+            //             {
+            //                 tag: 'a letter, for you',
+            //                 date: today,
+            //                 salutation: 'hey, Claue —',
+            //                 body:
+            //                     `i don't say this enough,
+            // so let me say it here, like this,
+            // where i can take my time
+            // and actually mean every word.
+
+            // you are one of the rare people
+            // who makes the world feel softer
+            // just by being in it.`,
+            //                 closing: 'with all the warmth i have,',
+            //                 sig: '— yours'
+            //             },
+            //             {
+            //                 tag: 'page two',
+            //                 date: today,
+            //                 salutation: 'there are things i notice —',
+            //                 body:
+            //                     `the way you laugh
+            // when something really catches you off guard,
+            // and your voice is very unique and cute.
+
+            // the way you care,
+            // quietly, without asking for credit.
+
+            // the way you show up
+            // even when it costs you something.
+
+            // those things don't go unnoticed.
+            // i see them. i keep them.`,
+            //                 closing: 'still paying attention,',
+            //                 sig: '— me'
+            //             },
+            //             {
+            //                 tag: 'page three',
+            //                 date: today,
+            //                 salutation: 'and one more thing —',
+            //                 body:
+            //                     `i saw your repost.
+            // i genuinely wish i could do what they did.
+
+            // maybe someday.
+
+            // but for now, this is what i have:
+            // words, a little flower,
+            // and the sincerest version of myself
+            // trying to tell you
+
+            // that you matter.
+            // that you're appreciated.
+            // that someone out here thinks about you
+            // more than you probably know.`,
+            //                 closing: 'hope this made you smile, even a little.',
+            //                 sig: '— 🌸'
+            //             }
             // ── pages 4–10: fill these in ──
-            , { tag: 'page four', date: today, salutation: '', body: 'UPCOMING PAGE', closing: '', sig: '' }
+            // , { tag: 'page four', date: today, salutation: '', body: 'UPCOMING PAGE', closing: '', sig: '' }
 
-            , { tag: 'page five', date: today, salutation: '', body: 'UPCOMING PAGE', closing: '', sig: '' }
+            // , { tag: 'page five', date: today, salutation: '', body: 'UPCOMING PAGE', closing: '', sig: '' }
 
-            , { tag: 'page six', date: today, salutation: '', body: 'UPCOMING PAGE', closing: '', sig: '' }
+            // , { tag: 'page six', date: today, salutation: '', body: 'UPCOMING PAGE', closing: '', sig: '' }
 
-            , { tag: 'page seven', date: today, salutation: '', body: 'UPCOMING PAGE', closing: '', sig: '' }
+            // , { tag: 'page seven', date: today, salutation: '', body: 'UPCOMING PAGE', closing: '', sig: '' }
 
-            , { tag: 'page eight', date: today, salutation: '', body: 'UPCOMING PAGE', closing: '', sig: '' }
+            // , { tag: 'page eight', date: today, salutation: '', body: 'UPCOMING PAGE', closing: '', sig: '' }
 
-            , { tag: 'page nine', date: today, salutation: '', body: 'UPCOMING PAGE', closing: '', sig: '' }
+            // , { tag: 'page nine', date: today, salutation: '', body: 'UPCOMING PAGE', closing: '', sig: '' }
 
-            , { tag: 'page ten', date: today, salutation: '', body: 'UPCOMING PAGE', closing: '', sig: '' }
+            // , { tag: 'page ten', date: today, salutation: '', body: 'UPCOMING PAGE', closing: '', sig: '' }
         ];
 
         // ══════════════════════════════════════
@@ -672,7 +694,7 @@ more than you probably know.`,
             window.bgMusic.loop = true;
             window.bgMusic.currentTime = parseFloat(savedTime);
             window.bgMusic.play().catch(e => console.log('Autoplay blocked:', e));
-            
+
             // Save music time before navigating away
             window.addEventListener('beforeunload', () => {
                 sessionStorage.setItem('musicTime', window.bgMusic.currentTime);
