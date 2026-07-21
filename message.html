@@ -664,6 +664,20 @@ more than you probably know.`,
         buildCard(PAGES[0]);
         renderDots();
         updateBtns();
+
+        // Resume background music if it was playing
+        const savedTime = sessionStorage.getItem('musicTime');
+        if (savedTime) {
+            window.bgMusic = new Audio('music.mp3');
+            window.bgMusic.loop = true;
+            window.bgMusic.currentTime = parseFloat(savedTime);
+            window.bgMusic.play().catch(e => console.log('Autoplay blocked:', e));
+            
+            // Save music time before navigating away
+            window.addEventListener('beforeunload', () => {
+                sessionStorage.setItem('musicTime', window.bgMusic.currentTime);
+            });
+        }
     </script>
 </body>
 
