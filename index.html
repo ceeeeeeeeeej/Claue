@@ -138,8 +138,8 @@
 
     /* When on the flower slide — anchor near the stem root */
     #slide-caption.flower-mode {
-      top: auto;
-      bottom: 5.2rem;
+      top: calc(50% + 180px);
+      bottom: auto;
       transform: translateX(-50%);
     }
 
@@ -427,72 +427,306 @@
     let t = 0;
     const BLOOM_DURATION = 240; // frames
 
-    // petal layers config
-    const petalLayers = [
-      // outer petals
-      { count: 8, lenBase: 130, wid: 36, c1: '#e879f9', c2: '#c084fc', offset: 0 },
-      // mid petals
-      { count: 7, lenBase: 100, wid: 28, c1: '#f9a8d4', c2: '#e879f9', offset: Math.PI / 8 },
-      // inner petals
-      { count: 6, lenBase: 68, wid: 20, c1: '#fde68a', c2: '#f9a8d4', offset: 0 },
-      // innermost
-      { count: 5, lenBase: 42, wid: 13, c1: '#ffffff', c2: '#fde68a', offset: Math.PI / 10 },
+    // ── Flower configurations ──
+    // Each flower: { x, y (functions of cx/cy), scale, petalLayers, bloomDelay, stemLen, stemCurve }
+    const FLOWERS = [
+      {
+        // Main center flower (original)
+        getX: () => cx,
+        getY: () => cy,
+        scale: 1,
+        bloomDelay: 0,
+        stemLen: 140,
+        layers: [
+          { count: 8, lenBase: 130, wid: 36, c1: '#e879f9', c2: '#c084fc', offset: 0 },
+          { count: 7, lenBase: 100, wid: 28, c1: '#f9a8d4', c2: '#e879f9', offset: Math.PI / 8 },
+          { count: 6, lenBase: 68, wid: 20, c1: '#fde68a', c2: '#f9a8d4', offset: 0 },
+          { count: 5, lenBase: 42, wid: 13, c1: '#ffffff', c2: '#fde68a', offset: Math.PI / 10 },
+        ],
+        glowColor1: '255,255,220',
+        glowColor2: '253,230,138',
+        glowColor3: '249,168,212',
+        centerDotColor: '255,245,180',
+        leaves: [
+          { offX: -4, offY: 80, len: 60, wid: 18, angle: Math.PI * 0.35, sway: 0 },
+          { offX: -4, offY: 110, len: 45, wid: 14, angle: -Math.PI * 0.45, sway: 1 },
+        ]
+      },
+      {
+        // Flower 2 — upper-left, blue-violet tones, smaller
+        getX: () => cx - W * 0.28,
+        getY: () => cy - H * 0.15,
+        scale: 0.55,
+        bloomDelay: 60,
+        stemLen: 100,
+        layers: [
+          { count: 7, lenBase: 120, wid: 34, c1: '#818cf8', c2: '#6366f1', offset: 0 },
+          { count: 6, lenBase: 88, wid: 24, c1: '#a78bfa', c2: '#818cf8', offset: Math.PI / 7 },
+          { count: 5, lenBase: 58, wid: 17, c1: '#c4b5fd', c2: '#a78bfa', offset: 0 },
+          { count: 4, lenBase: 36, wid: 11, c1: '#ede9fe', c2: '#c4b5fd', offset: Math.PI / 8 },
+        ],
+        glowColor1: '237,233,254',
+        glowColor2: '196,181,253',
+        glowColor3: '129,140,248',
+        centerDotColor: '224,220,255',
+        leaves: [
+          { offX: -3, offY: 55, len: 40, wid: 12, angle: Math.PI * 0.4, sway: 0.5 },
+          { offX: 2, offY: 75, len: 32, wid: 10, angle: -Math.PI * 0.38, sway: 1.5 },
+        ]
+      },
+      {
+        // Flower 3 — right side, warm pink-coral tones
+        getX: () => cx + W * 0.3,
+        getY: () => cy + H * 0.05,
+        scale: 0.48,
+        bloomDelay: 120,
+        stemLen: 90,
+        layers: [
+          { count: 7, lenBase: 115, wid: 32, c1: '#fb7185', c2: '#f43f5e', offset: 0 },
+          { count: 6, lenBase: 82, wid: 22, c1: '#fda4af', c2: '#fb7185', offset: Math.PI / 6 },
+          { count: 5, lenBase: 55, wid: 16, c1: '#fecdd3', c2: '#fda4af', offset: 0 },
+          { count: 4, lenBase: 34, wid: 10, c1: '#fff1f2', c2: '#fecdd3', offset: Math.PI / 9 },
+        ],
+        glowColor1: '255,241,242',
+        glowColor2: '253,164,175',
+        glowColor3: '251,113,133',
+        centerDotColor: '255,228,230',
+        leaves: [
+          { offX: 3, offY: 50, len: 36, wid: 11, angle: Math.PI * 0.32, sway: 0.8 },
+          { offX: -2, offY: 68, len: 28, wid: 9, angle: -Math.PI * 0.42, sway: 1.8 },
+        ]
+      },
+      {
+        // Flower 4 — bottom-left, golden-amber tones
+        getX: () => cx - W * 0.22,
+        getY: () => cy + H * 0.22,
+        scale: 0.42,
+        bloomDelay: 180,
+        stemLen: 80,
+        layers: [
+          { count: 6, lenBase: 110, wid: 30, c1: '#fbbf24', c2: '#f59e0b', offset: 0 },
+          { count: 5, lenBase: 78, wid: 20, c1: '#fcd34d', c2: '#fbbf24', offset: Math.PI / 5 },
+          { count: 5, lenBase: 52, wid: 15, c1: '#fde68a', c2: '#fcd34d', offset: 0 },
+          { count: 4, lenBase: 32, wid: 10, c1: '#fefce8', c2: '#fde68a', offset: Math.PI / 8 },
+        ],
+        glowColor1: '254,252,232',
+        glowColor2: '253,230,138',
+        glowColor3: '251,191,36',
+        centerDotColor: '255,249,196',
+        leaves: [
+          { offX: -3, offY: 45, len: 32, wid: 10, angle: Math.PI * 0.36, sway: 0.3 },
+          { offX: 2, offY: 60, len: 26, wid: 8, angle: -Math.PI * 0.4, sway: 1.2 },
+        ]
+      },
+      {
+        // Flower 5 — upper-right, teal-cyan tones
+        getX: () => cx + W * 0.25,
+        getY: () => cy - H * 0.22,
+        scale: 0.38,
+        bloomDelay: 100,
+        stemLen: 75,
+        layers: [
+          { count: 6, lenBase: 105, wid: 28, c1: '#2dd4bf', c2: '#14b8a6', offset: 0 },
+          { count: 5, lenBase: 74, wid: 19, c1: '#5eead4', c2: '#2dd4bf', offset: Math.PI / 6 },
+          { count: 5, lenBase: 48, wid: 14, c1: '#99f6e4', c2: '#5eead4', offset: 0 },
+          { count: 4, lenBase: 30, wid: 9, c1: '#ccfbf1', c2: '#99f6e4', offset: Math.PI / 9 },
+        ],
+        glowColor1: '204,251,241',
+        glowColor2: '153,246,228',
+        glowColor3: '45,212,191',
+        centerDotColor: '204,251,241',
+        leaves: [
+          { offX: -2, offY: 42, len: 28, wid: 9, angle: Math.PI * 0.38, sway: 0.7 },
+          { offX: 3, offY: 56, len: 22, wid: 7, angle: -Math.PI * 0.35, sway: 1.4 },
+        ]
+      },
+      {
+        // Flower 6 — lower-right, soft lavender-rose
+        getX: () => cx + W * 0.18,
+        getY: () => cy + H * 0.25,
+        scale: 0.35,
+        bloomDelay: 200,
+        stemLen: 70,
+        layers: [
+          { count: 6, lenBase: 100, wid: 26, c1: '#d8b4fe', c2: '#a78bfa', offset: 0 },
+          { count: 5, lenBase: 70, wid: 18, c1: '#e9d5ff', c2: '#d8b4fe', offset: Math.PI / 6 },
+          { count: 5, lenBase: 46, wid: 13, c1: '#f3e8ff', c2: '#e9d5ff', offset: 0 },
+          { count: 4, lenBase: 28, wid: 8, c1: '#faf5ff', c2: '#f3e8ff', offset: Math.PI / 7 },
+        ],
+        glowColor1: '250,245,255',
+        glowColor2: '233,213,255',
+        glowColor3: '216,180,254',
+        centerDotColor: '243,232,255',
+        leaves: [
+          { offX: -3, offY: 40, len: 26, wid: 8, angle: Math.PI * 0.33, sway: 0.9 },
+          { offX: 2, offY: 52, len: 20, wid: 7, angle: -Math.PI * 0.44, sway: 1.6 },
+        ]
+      },
+      {
+        // Flower 7 — far left center, magenta-fuchsia accent
+        getX: () => cx - W * 0.35,
+        getY: () => cy + H * 0.05,
+        scale: 0.32,
+        bloomDelay: 150,
+        stemLen: 65,
+        layers: [
+          { count: 6, lenBase: 95, wid: 25, c1: '#e879f9', c2: '#d946ef', offset: 0 },
+          { count: 5, lenBase: 66, wid: 17, c1: '#f0abfc', c2: '#e879f9', offset: Math.PI / 5 },
+          { count: 4, lenBase: 44, wid: 12, c1: '#f5d0fe', c2: '#f0abfc', offset: 0 },
+          { count: 4, lenBase: 26, wid: 8, c1: '#fae8ff', c2: '#f5d0fe', offset: Math.PI / 8 },
+        ],
+        glowColor1: '250,232,255',
+        glowColor2: '245,208,254',
+        glowColor3: '232,121,249',
+        centerDotColor: '250,232,255',
+        leaves: [
+          { offX: -2, offY: 38, len: 24, wid: 8, angle: Math.PI * 0.34, sway: 0.4 },
+          { offX: 2, offY: 50, len: 19, wid: 6, angle: -Math.PI * 0.41, sway: 1.1 },
+        ]
+      },
+      {
+        // Flower 8 — top center, sky-blue tones
+        getX: () => cx + W * 0.02,
+        getY: () => cy - H * 0.3,
+        scale: 0.34,
+        bloomDelay: 140,
+        stemLen: 68,
+        layers: [
+          { count: 6, lenBase: 98, wid: 26, c1: '#38bdf8', c2: '#0ea5e9', offset: 0 },
+          { count: 5, lenBase: 68, wid: 18, c1: '#7dd3fc', c2: '#38bdf8', offset: Math.PI / 6 },
+          { count: 4, lenBase: 44, wid: 12, c1: '#bae6fd', c2: '#7dd3fc', offset: 0 },
+          { count: 4, lenBase: 26, wid: 8, c1: '#e0f2fe', c2: '#bae6fd', offset: Math.PI / 8 },
+        ],
+        glowColor1: '224,242,254',
+        glowColor2: '186,230,253',
+        glowColor3: '56,189,248',
+        centerDotColor: '224,242,254',
+        leaves: [
+          { offX: -2, offY: 38, len: 24, wid: 8, angle: Math.PI * 0.37, sway: 0.6 },
+          { offX: 2, offY: 50, len: 18, wid: 6, angle: -Math.PI * 0.39, sway: 1.3 },
+        ]
+      },
+      {
+        // Flower 9 — bottom center, peach-salmon tones
+        getX: () => cx - W * 0.05,
+        getY: () => cy + H * 0.32,
+        scale: 0.3,
+        bloomDelay: 220,
+        stemLen: 60,
+        layers: [
+          { count: 6, lenBase: 92, wid: 24, c1: '#fb923c', c2: '#f97316', offset: 0 },
+          { count: 5, lenBase: 64, wid: 16, c1: '#fdba74', c2: '#fb923c', offset: Math.PI / 5 },
+          { count: 4, lenBase: 42, wid: 11, c1: '#fed7aa', c2: '#fdba74', offset: 0 },
+          { count: 4, lenBase: 24, wid: 7, c1: '#ffedd5', c2: '#fed7aa', offset: Math.PI / 7 },
+        ],
+        glowColor1: '255,237,213',
+        glowColor2: '254,215,170',
+        glowColor3: '251,146,60',
+        centerDotColor: '255,237,213',
+        leaves: [
+          { offX: -2, offY: 34, len: 22, wid: 7, angle: Math.PI * 0.35, sway: 0.5 },
+          { offX: 2, offY: 46, len: 17, wid: 6, angle: -Math.PI * 0.43, sway: 1.0 },
+        ]
+      },
+      {
+        // Flower 10 — far right mid, mint-emerald tones
+        getX: () => cx + W * 0.38,
+        getY: () => cy - H * 0.08,
+        scale: 0.28,
+        bloomDelay: 170,
+        stemLen: 55,
+        layers: [
+          { count: 5, lenBase: 88, wid: 22, c1: '#34d399', c2: '#10b981', offset: 0 },
+          { count: 5, lenBase: 60, wid: 15, c1: '#6ee7b7', c2: '#34d399', offset: Math.PI / 5 },
+          { count: 4, lenBase: 38, wid: 10, c1: '#a7f3d0', c2: '#6ee7b7', offset: 0 },
+          { count: 4, lenBase: 22, wid: 7, c1: '#d1fae5', c2: '#a7f3d0', offset: Math.PI / 8 },
+        ],
+        glowColor1: '209,250,229',
+        glowColor2: '167,243,208',
+        glowColor3: '52,211,153',
+        centerDotColor: '209,250,229',
+        leaves: [
+          { offX: -2, offY: 32, len: 20, wid: 6, angle: Math.PI * 0.36, sway: 0.8 },
+          { offX: 2, offY: 42, len: 15, wid: 5, angle: -Math.PI * 0.4, sway: 1.5 },
+        ]
+      }
     ];
 
-    function drawFlower(progress) {
-      const p = Math.min(progress, 1);
-      const eased = p < 0.5 ? 2 * p * p : -1 + (4 - 2 * p) * p; // ease in-out
+    function drawSingleFlower(flower, globalTime) {
+      const fx = flower.getX();
+      const fy = flower.getY();
+      const s = flower.scale;
+      const localT = Math.max(0, globalTime - flower.bloomDelay);
+      const progress = Math.min(localT / BLOOM_DURATION, 1);
+      const p = progress < 0.5 ? 2 * progress * progress : -1 + (4 - 2 * progress) * progress;
+
+      if (p <= 0) return;
 
       // stem
-      drawStem(cx, cy + 20, 140 * eased, eased);
+      drawStem(fx, fy + 20 * s, flower.stemLen * s * p, p);
+
       // leaves
-      if (eased > 0.3) {
-        const la = (eased - 0.3) / 0.7;
-        drawLeaf(cx - 4, cy + 80, 60 * la, 18 * la, Math.PI * 0.35 + Math.sin(t * 0.02) * 0.03, la);
-        drawLeaf(cx - 4, cy + 110, 45 * la, 14 * la, -Math.PI * 0.45 + Math.sin(t * 0.02 + 1) * 0.03, la);
+      if (p > 0.3) {
+        const la = (p - 0.3) / 0.7;
+        flower.leaves.forEach(leaf => {
+          drawLeaf(
+            fx + leaf.offX * s,
+            fy + leaf.offY * s,
+            leaf.len * s * la,
+            leaf.wid * s * la,
+            leaf.angle + Math.sin(globalTime * 0.02 + leaf.sway) * 0.03,
+            la
+          );
+        });
       }
 
-      if (eased < 0.15) return;
-      const fe = (eased - 0.15) / 0.85;
+      if (p < 0.15) return;
+      const fe = (p - 0.15) / 0.85;
 
-      // draw layers
-      petalLayers.forEach((layer, li) => {
+      // petal layers
+      flower.layers.forEach((layer, li) => {
         const layerDelay = li * 0.18;
         const lp = Math.max(0, Math.min(1, (fe - layerDelay) / (1 - layerDelay)));
         const eL = lp < 0.5 ? 2 * lp * lp : -1 + (4 - 2 * lp) * lp;
         if (eL <= 0) return;
         for (let i = 0; i < layer.count; i++) {
-          const angle = (i / layer.count) * Math.PI * 2 + layer.offset + t * 0.003 * (li % 2 === 0 ? 1 : -1);
-          const len = layer.lenBase * eL;
-          const wid = layer.wid * eL;
-          drawPetalSimple(cx, cy, len, wid, angle, layer.c1, layer.c2, eL * 0.92);
+          const angle = (i / layer.count) * Math.PI * 2 + layer.offset + globalTime * 0.003 * (li % 2 === 0 ? 1 : -1);
+          const len = layer.lenBase * s * eL;
+          const wid = layer.wid * s * eL;
+          drawPetalSimple(fx, fy, len, wid, angle, layer.c1, layer.c2, eL * 0.92);
         }
       });
 
       // center glow
       if (fe > 0.3) {
         const ga = (fe - 0.3) / 0.7;
-        const pulse = 1 + Math.sin(t * 0.06) * 0.08;
-        const rg = ctx.createRadialGradient(cx, cy, 0, cx, cy, 30 * ga * pulse);
-        rg.addColorStop(0, `rgba(255,255,220,${ga * 0.98})`);
-        rg.addColorStop(0.4, `rgba(253,230,138,${ga * 0.8})`);
-        rg.addColorStop(0.75, `rgba(249,168,212,${ga * 0.4})`);
-        rg.addColorStop(1, 'rgba(249,168,212,0)');
+        const pulse = 1 + Math.sin(globalTime * 0.06) * 0.08;
+        const glowR = 30 * s * ga * pulse;
+        const rg = ctx.createRadialGradient(fx, fy, 0, fx, fy, glowR);
+        rg.addColorStop(0, `rgba(${flower.glowColor1},${ga * 0.98})`);
+        rg.addColorStop(0.4, `rgba(${flower.glowColor2},${ga * 0.8})`);
+        rg.addColorStop(0.75, `rgba(${flower.glowColor3},${ga * 0.4})`);
+        rg.addColorStop(1, `rgba(${flower.glowColor3},0)`);
         ctx.beginPath();
-        ctx.arc(cx, cy, 30 * ga * pulse, 0, Math.PI * 2);
+        ctx.arc(fx, fy, glowR, 0, Math.PI * 2);
         ctx.fillStyle = rg;
         ctx.fill();
 
         // center dots
-        for (let i = 0; i < 8; i++) {
-          const a = (i / 8) * Math.PI * 2 + t * 0.04;
-          const r = 12 * ga * pulse;
+        const dotCount = Math.round(8 * s) || 4;
+        for (let i = 0; i < dotCount; i++) {
+          const a = (i / dotCount) * Math.PI * 2 + globalTime * 0.04;
+          const r = 12 * s * ga * pulse;
           ctx.beginPath();
-          ctx.arc(cx + Math.cos(a) * r, cy + Math.sin(a) * r, 2 * ga, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(255,245,180,${ga * 0.9})`;
+          ctx.arc(fx + Math.cos(a) * r, fy + Math.sin(a) * r, 2 * s * ga, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${flower.centerDotColor},${ga * 0.9})`;
           ctx.fill();
         }
       }
+    }
+
+    function drawAllFlowers() {
+      FLOWERS.forEach(flower => drawSingleFlower(flower, t));
     }
 
     // ── glow background ──
@@ -533,18 +767,25 @@
     }
 
     // ── aura rings ──
-    function drawAura(progress) {
-      if (progress < 0.3) return;
-      const a = (progress - 0.3) / 0.7;
-      for (let i = 0; i < 3; i++) {
-        const phase = t * 0.015 + i * (Math.PI * 2 / 3);
-        const r = 90 + i * 30 + Math.sin(phase) * 6;
-        ctx.beginPath();
-        ctx.arc(cx, cy, r * Math.min(a * 2, 1), 0, Math.PI * 2);
-        ctx.strokeStyle = `rgba(192,132,252,${0.06 * a})`;
-        ctx.lineWidth = i === 0 ? 2 : 1;
-        ctx.stroke();
-      }
+    function drawAura() {
+      FLOWERS.forEach(flower => {
+        const fx = flower.getX();
+        const fy = flower.getY();
+        const s = flower.scale;
+        const localT = Math.max(0, t - flower.bloomDelay);
+        const progress = Math.min(localT / BLOOM_DURATION, 1);
+        if (progress < 0.3) return;
+        const a = (progress - 0.3) / 0.7;
+        for (let i = 0; i < 3; i++) {
+          const phase = t * 0.015 + i * (Math.PI * 2 / 3);
+          const r = (90 + i * 30) * s + Math.sin(phase) * 6 * s;
+          ctx.beginPath();
+          ctx.arc(fx, fy, r * Math.min(a * 2, 1), 0, Math.PI * 2);
+          ctx.strokeStyle = `rgba(192,132,252,${0.06 * a * s})`;
+          ctx.lineWidth = (i === 0 ? 2 : 1) * s;
+          ctx.stroke();
+        }
+      });
     }
 
     // ── main loop ──
@@ -552,11 +793,10 @@
 
     function loop() {
       if (flowerActive) t++;
-      const progress = t / BLOOM_DURATION;
       drawBackground();
       drawParticles();
-      drawAura(progress);
-      drawFlower(progress);
+      drawAura();
+      drawAllFlowers();
       requestAnimationFrame(loop);
     }
     loop();
@@ -590,7 +830,7 @@
     // ═══════════════════════════════════════
     //  SLIDE DATA  — add more objects here!
     // ═══════════════════════════════════════
-     const SLIDES = [
+    const SLIDES = [
       {
         type: 'message',
         label: 'a little something',
@@ -616,7 +856,7 @@
           captionEl.classList.add('flower-mode');
           const p = document.createElement('p');
           p.className = 'flower-caption';
-          p.textContent = 'sige repost pa, Claue!\u2661';
+          p.textContent = ' Sige repost pa, Claue!\u2661';
           captionEl.appendChild(p);
         } else {
           captionEl.classList.remove('flower-mode');
