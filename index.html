@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="A heartfelt little page made just for you." />
+    <title>For You ♡</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+    <!-- Canvas flower background (always rendered) -->
+    <canvas id="flower-canvas"></canvas>
+
+    <!-- Main wrapper -->
+    <div class="wrapper">
+
+        <!-- ── COVER SLIDE ── -->
+        <div class="slide active" id="slide-0">
+            <div class="cover-card">
+                <div class="cover-deco" id="cover-heart">♡</div>
+                <p class="cover-label">
+                    i saw your repost,<br />
+                    i can't afford to do that yet,<br />
+                    this is all i can do for now.<br />
+                    <em>— hope you like it ♡</em>
+                </p>
+                <!-- <div class="cover-hint">
+                    <span class="dot dot-active"></span>
+                    <span>press <strong>next</strong> to begin</span>
+                </div>
+            </div> -->
+            </div>
+
+            <!-- ── FLOWER SLIDE ── -->
+            <div class="slide" id="slide-flower">
+                <div class="flower-slide-content">
+                    <p class="flower-caption" id="flower-caption">for you ♡</p>
+                </div>
+            </div>
+
+            <!-- ── CONTENT SLIDES (dynamically added) ── -->
+            <div id="slides-container"></div>
+
+            <!-- ── ADD NEW SLIDE PANEL ──
+    <div class="slide" id="slide-add">
+      <div class="add-card">
+        <h2 class="add-title">add a new page ✦</h2>
+
+        <div class="field-group">
+          <label for="slide-text" class="field-label">your words</label>
+          <textarea id="slide-text" class="field-textarea" placeholder="write something here…" rows="4"></textarea>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">a photo</label>
+          <label for="slide-photo" class="photo-upload-btn" id="photo-label">
+            <span id="photo-icon">📷</span>
+            <span id="photo-text">choose a photo</span>
+          </label>
+          <input type="file" id="slide-photo" accept="image/*" hidden />
+          <div class="photo-preview-wrap" id="photo-preview-wrap" style="display:none">
+            <img id="photo-preview" src="" alt="preview" />
+            <button class="remove-photo-btn" id="remove-photo-btn" title="remove photo">✕</button>
+          </div>
+        </div>
+
+        <button class="add-btn" id="add-slide-btn">add this page ♡</button>
+      </div>
+    </div> -->
+
+            <!-- ── NAVIGATION ── -->
+            <nav class="nav" id="nav">
+                <button class="nav-btn" id="prev-btn" aria-label="Previous slide">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                    prev
+                </button>
+
+                <div class="slide-dots" id="slide-dots"></div>
+
+                <button class="nav-btn" id="next-btn" aria-label="Next slide">
+                    next
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                </button>
+            </nav>
+
+        </div>
+
+        <script src="java.js"></script>
+        </canvas>
+</body>
+
+</html>

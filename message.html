@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>For You ♡</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500&display=swap"
+        rel="stylesheet" />
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #07040f;
+            font-family: 'Inter', sans-serif;
+            color: #f0e8ff;
+        }
+
+        /* canvas layers */
+        #bg-canvas,
+        #spark-canvas {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        #bg-canvas {
+            z-index: 0;
+        }
+
+        #spark-canvas {
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        /* page layout */
+        #page {
+            position: fixed;
+            inset: 0;
+            z-index: 5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem 1.5rem 6.5rem;
+        }
+
+        /* letter card */
+        .letter-card {
+            position: relative;
+            width: min(580px, 94vw);
+            max-height: calc(100vh - 9rem);
+            overflow-y: auto;
+            background: rgba(10, 4, 22, 0.82);
+            backdrop-filter: blur(28px);
+            -webkit-backdrop-filter: blur(28px);
+            border: 1px solid rgba(192, 132, 252, 0.22);
+            border-radius: 22px;
+            padding: 2.8rem 3rem;
+            box-shadow:
+                0 0 80px rgba(192, 132, 252, 0.18),
+                0 0 0 1px rgba(249, 168, 212, 0.06) inset,
+                0 24px 70px rgba(0, 0, 0, 0.6);
+            scrollbar-width: thin;
+            scrollbar-color: rgba(192, 132, 252, 0.3) transparent;
+        }
+
+        .letter-card::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .letter-card::-webkit-scrollbar-thumb {
+            background: rgba(192, 132, 252, 0.3);
+            border-radius: 4px;
+        }
+
+        /* top accent line */
+        .letter-card::before {
+            content: '';
+            display: block;
+            width: 48px;
+            height: 2px;
+            background: linear-gradient(90deg, #e879f9, #c084fc, #818cf8);
+            border-radius: 2px;
+            margin: 0 auto 2rem;
+        }
+
+        /* transitions */
+        .letter-card {
+            transition: opacity 0.28s ease, transform 0.28s ease;
+        }
+
+        .letter-card.out {
+            opacity: 0;
+            transform: translateX(-28px) scale(0.97);
+        }
+
+        .letter-card.out-rev {
+            opacity: 0;
+            transform: translateX(28px) scale(0.97);
+        }
+
+        /* typography */
+        .letter-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.8rem;
+        }
+
+        .letter-tag {
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            color: #c084fc;
+            font-weight: 500;
+        }
+
+        .letter-date {
+            font-size: 0.68rem;
+            color: #6b5d8a;
+            letter-spacing: 0.04em;
+        }
+
+        .letter-salutation {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(1rem, 2.5vw, 1.18rem);
+            color: #f9a8d4;
+            margin-bottom: 1.4rem;
+        }
+
+        .letter-body {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(0.95rem, 2.2vw, 1.1rem);
+            line-height: 2;
+            color: #e2d9f3;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .letter-closing {
+            margin-top: 2rem;
+            text-align: right;
+        }
+
+        .letter-closing p {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-size: clamp(0.9rem, 2vw, 1.05rem);
+            color: #c084fc;
+            line-height: 1.8;
+        }
+
+        .letter-closing .sig {
+            color: #f9a8d4;
+            font-size: clamp(1rem, 2.4vw, 1.2rem);
+            margin-top: 0.3rem;
+        }
+
+        .deco-heart {
+            text-align: center;
+            font-size: 1.4rem;
+            margin-top: 1.8rem;
+            animation: hb 2.2s ease-in-out infinite;
+            filter: drop-shadow(0 0 14px rgba(249, 168, 212, 0.6));
+        }
+
+        @keyframes hb {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            20% {
+                transform: scale(1.14);
+            }
+
+            40% {
+                transform: scale(0.96);
+            }
+
+            60% {
+                transform: scale(1.07);
+            }
+        }
+
+        /* nav */
+        .nav {
+            position: fixed;
+            bottom: 1.8rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: rgba(10, 4, 20, 0.74);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(192, 132, 252, 0.2);
+            border-radius: 60px;
+            padding: 0.55rem 1.2rem;
+            box-shadow: 0 4px 28px rgba(0, 0, 0, 0.5), 0 0 36px rgba(192, 132, 252, 0.1);
+        }
+
+        .nav-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.36rem;
+            background: none;
+            border: none;
+            color: #9a89b4;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 500;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            cursor: pointer;
+            padding: 0.38rem 0.6rem;
+            border-radius: 8px;
+            transition: color 0.2s, background 0.2s;
+        }
+
+        .nav-btn svg {
+            width: 15px;
+            height: 15px;
+        }
+
+        .nav-btn:hover {
+            color: #c084fc;
+            background: rgba(192, 132, 252, 0.1);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.22;
+            cursor: not-allowed;
+            background: none;
+        }
+
+        .dots {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #9a89b4;
+            opacity: 0.32;
+            cursor: pointer;
+            transition: opacity 0.3s, transform 0.3s, background 0.3s;
+        }
+
+        .dot.active {
+            opacity: 1;
+            background: #c084fc;
+            transform: scale(1.5);
+            box-shadow: 0 0 9px #c084fc;
+        }
+    </style>
+</head>
+
+<body>
+
+    <canvas id="bg-canvas"></canvas>
+    <canvas id="spark-canvas"></canvas>
+
+    <div id="page">
+        <div class="letter-card" id="letter-card"></div>
+    </div>
+
+    <nav class="nav">
+        <button class="nav-btn" id="prev-btn" aria-label="Previous">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6" />
+            </svg>
+            prev
+        </button>
+        <div class="dots" id="dots"></div>
+        <button class="nav-btn" id="next-btn" aria-label="Next">
+            next
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6" />
+            </svg>
+        </button>
+    </nav>
+
+    <script>
+        // ══════════════════════════════════════
+        //  LETTER PAGES — edit freely
+        // ══════════════════════════════════════
+        const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+        const PAGES = [
+            {
+                tag: 'a letter, for you',
+                date: today,
+                salutation: 'hey, you —',
+                body:
+                    `i don't say this enough,
+so let me say it here, like this,
+where i can take my time
+and actually mean every word.
+
+you are one of the rare people
+who makes the world feel softer
+just by being in it.`,
+                closing: 'with all the warmth i have,',
+                sig: '— yours'
+            },
+            {
+                tag: 'page two',
+                date: today,
+                salutation: 'there are things i notice —',
+                body:
+                    `the way you laugh
+when something really catches you off guard,
+and your voice is very unique and cute.
+
+the way you care,
+quietly, without asking for credit.
+
+the way you show up
+even when it costs you something.
+
+those things don't go unnoticed.
+i see them. i keep them.`,
+                closing: 'still paying attention,',
+                sig: '— me'
+            },
+            {
+                tag: 'page three',
+                date: today,
+                salutation: 'and one more thing —',
+                body:
+                    `i saw your repost.
+i genuinely wish i could do what they did.
+
+maybe someday.
+
+but for now, this is what i have:
+words, a little flower,
+and the sincerest version of myself
+trying to tell you
+
+that you matter.
+that you're appreciated.
+that someone out here thinks about you
+more than you probably know.`,
+                closing: 'hope this made you smile, even a little.',
+                sig: '— 🌸'
+            }
+            // ── pages 4–10: fill these in ──
+            , { tag: 'page four', date: today, salutation: '', body: 'UPCOMING PAGE', closing: '', sig: '' }
+
+            , { tag: 'page five', date: today, salutation: '', body: 'UPCOMING PAGE', closing: '', sig: '' }
+
+            , { tag: 'page six', date: today, salutation: '', body: 'UPCOMING PAGE', closing: '', sig: '' }
+
+            , { tag: 'page seven', date: today, salutation: '', body: 'UPCOMING PAGE', closing: '', sig: '' }
+
+            , { tag: 'page eight', date: today, salutation: '', body: 'UPCOMING PAGE', closing: '', sig: '' }
+
+            , { tag: 'page nine', date: today, salutation: '', body: 'UPCOMING PAGE', closing: '', sig: '' }
+
+            , { tag: 'page ten', date: today, salutation: '', body: 'UPCOMING PAGE', closing: '', sig: '' }
+        ];
+
+        // ══════════════════════════════════════
+        //  BACKGROUND — ambient sparkles
+        // ══════════════════════════════════════
+        const bgC = document.getElementById('bg-canvas');
+        const bgX = bgC.getContext('2d');
+        const spC = document.getElementById('spark-canvas');
+        const spX = spC.getContext('2d');
+        let W, H, MX, MY;
+
+        function resize() {
+            W = bgC.width = spC.width = window.innerWidth;
+            H = bgC.height = spC.height = window.innerHeight;
+            MX = W / 2; MY = H / 2;
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        function hexA(hex, a) {
+            return `rgba(${parseInt(hex.slice(1, 3), 16)},${parseInt(hex.slice(3, 5), 16)},${parseInt(hex.slice(5, 7), 16)},${a})`;
+        }
+
+        const COLS = ['#f9a8d4', '#c084fc', '#818cf8', '#fde68a', '#e879f9', '#a78bfa'];
+        const sparks = Array.from({ length: 110 }, () => ({
+            angle: Math.random() * Math.PI * 2,
+            dist: Math.random() * 440 + 50,
+            r: Math.random() * 1.8 + 0.3,
+            drift: Math.random() * 0.005 + 0.001,
+            op: Math.random() * 0.5 + 0.15,
+            ts: Math.random() * 0.05 + 0.01,
+            to: Math.random() * Math.PI * 2,
+            col: COLS[Math.floor(Math.random() * COLS.length)]
+        }));
+
+        let bT = 0;
+        (function bgLoop() {
+            bT++;
+            bgX.fillStyle = '#07040f';
+            bgX.fillRect(0, 0, W, H);
+            const rg = bgX.createRadialGradient(MX, MY, 0, MX, MY, Math.min(W, H) * 0.5);
+            rg.addColorStop(0, 'rgba(90,30,140,0.20)');
+            rg.addColorStop(0.5, 'rgba(50,10,90,0.08)');
+            rg.addColorStop(1, 'rgba(0,0,0,0)');
+            bgX.fillStyle = rg;
+            bgX.fillRect(0, 0, W, H);
+
+            spX.clearRect(0, 0, W, H);
+            sparks.forEach(s => {
+                s.angle += s.drift;
+                const tw = 0.5 + 0.5 * Math.sin(bT * s.ts + s.to);
+                spX.beginPath();
+                spX.arc(MX + Math.cos(s.angle) * s.dist, MY + Math.sin(s.angle) * s.dist, s.r * tw, 0, Math.PI * 2);
+                spX.fillStyle = hexA(s.col, s.op * (0.35 + 0.65 * tw));
+                spX.fill();
+            });
+            requestAnimationFrame(bgLoop);
+        })();
+
+        // ══════════════════════════════════════
+        //  LETTER RENDERING
+        // ══════════════════════════════════════
+        const card = document.getElementById('letter-card');
+        const dotsEl = document.getElementById('dots');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        let current = 0;
+
+        function buildCard(page) {
+            card.innerHTML = `
+    <div class="letter-meta">
+      <span class="letter-tag">${page.tag}</span>
+      <span class="letter-date">${page.date}</span>
+    </div>
+    <p class="letter-salutation">${page.salutation}</p>
+    <p class="letter-body">${page.body}</p>
+    <div class="letter-closing">
+      <p>${page.closing}</p>
+      <p class="sig">${page.sig}</p>
+    </div>
+    <div class="deco-heart">♡</div>
+  `;
+        }
+
+        function renderDots() {
+            dotsEl.innerHTML = '';
+            PAGES.forEach((_, i) => {
+                const d = document.createElement('span');
+                d.className = 'dot' + (i === current ? ' active' : '');
+                d.addEventListener('click', () => goTo(i));
+                dotsEl.appendChild(d);
+            });
+        }
+
+        function updateBtns() {
+            prevBtn.disabled = false; // page 0 prev → flower.html
+            nextBtn.disabled = current === PAGES.length - 1;
+        }
+
+        function goTo(index, dir = 1) {
+            if (index < 0) { window.location.href = 'flower.html'; return; }
+            if (index >= PAGES.length || index === current) return;
+
+            const outCls = dir > 0 ? 'out' : 'out-rev';
+
+            card.classList.add(outCls);
+            setTimeout(() => {
+                card.classList.remove(outCls);
+                current = index;
+                buildCard(PAGES[current]);
+                renderDots();
+                updateBtns();
+                card.scrollTop = 0;
+                // tiny reflow then fade in via CSS default state
+            }, 260);
+        }
+
+        prevBtn.addEventListener('click', () => goTo(current - 1, -1));
+        nextBtn.addEventListener('click', () => goTo(current + 1, 1));
+
+        document.addEventListener('keydown', e => {
+            if (e.key === 'ArrowRight') goTo(current + 1, 1);
+            if (e.key === 'ArrowLeft') goTo(current - 1, -1);
+        });
+
+        let tsx = 0;
+        document.addEventListener('touchstart', e => { tsx = e.changedTouches[0].screenX; }, { passive: true });
+        document.addEventListener('touchend', e => {
+            const diff = tsx - e.changedTouches[0].screenX;
+            if (Math.abs(diff) > 50) goTo(diff > 0 ? current + 1 : current - 1, diff > 0 ? 1 : -1);
+        }, { passive: true });
+
+        // init
+        buildCard(PAGES[0]);
+        renderDots();
+        updateBtns();
+    </script>
+</body>
+
+</html>
