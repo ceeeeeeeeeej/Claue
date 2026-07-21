@@ -594,7 +594,7 @@
       {
         type: 'message',
         label: 'a little something',
-        text: 'i saw your repost,\ni can\'t afford to do that yet,\nthis is all i can do for now.\n\n— hope you like it ♡'
+        text: 'Kita ko sa imo repost,\nappreciate diay ha\n\n Next lang hehe'
       },
       { type: 'flower' },   // slide 1: just the flower + caption
       // Add more slides here:
@@ -664,19 +664,40 @@
       current = index;
       const slide = SLIDES[current];
 
+      if (!window.bgMusic) {
+        window.bgMusic = new Audio('music.mp3');
+        window.bgMusic.loop = true;
+        // Restore time if coming back from message.html
+        const savedTime = sessionStorage.getItem('musicTime');
+        if (savedTime) window.bgMusic.currentTime = parseFloat(savedTime);
+      }
+
       if (slide.type === 'flower') {
         // Reset bloom and fade the canvas in
         t = 0;
         flowerActive = true;
         // Small delay so the fade-in starts after caption swap begins
         setTimeout(() => canvas.classList.add('flower-visible'), 80);
+        
+        // Play music when flower appears
+        window.bgMusic.play().catch(e => console.log('Autoplay blocked:', e));
       } else {
         // Fade canvas out and pause bloom
         canvas.classList.remove('flower-visible');
         flowerActive = false;
         // Reset so next flower visit blooms fresh
         t = 0;
+        
+        // Pause music if we go back to the first slide
+        if (window.bgMusic) window.bgMusic.pause();
       }
+
+      // Save music time before navigating away
+      window.addEventListener('beforeunload', () => {
+        if (window.bgMusic) {
+          sessionStorage.setItem('musicTime', window.bgMusic.currentTime);
+        }
+      });
 
       renderCaption(slide);
       renderDots();
