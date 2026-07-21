@@ -31,6 +31,7 @@
 
         /* canvas layers */
         #bg-canvas,
+        #flower-canvas,
         #spark-canvas {
             position: fixed;
             inset: 0;
@@ -40,6 +41,12 @@
 
         #bg-canvas {
             z-index: 0;
+        }
+
+        #flower-canvas {
+            z-index: 1;
+            pointer-events: none;
+            opacity: 0.35;
         }
 
         #spark-canvas {
@@ -425,6 +432,7 @@
 <body>
 
     <canvas id="bg-canvas"></canvas>
+    <canvas id="flower-canvas"></canvas>
     <canvas id="spark-canvas"></canvas>
 
     <div id="page">
@@ -557,13 +565,15 @@ more than you probably know.`,
         // ══════════════════════════════════════
         const bgC = document.getElementById('bg-canvas');
         const bgX = bgC.getContext('2d');
+        const flC = document.getElementById('flower-canvas');
+        const flX = flC.getContext('2d');
         const spC = document.getElementById('spark-canvas');
         const spX = spC.getContext('2d');
         let W, H, MX, MY;
 
         function resize() {
-            W = bgC.width = spC.width = window.innerWidth;
-            H = bgC.height = spC.height = window.innerHeight;
+            W = bgC.width = flC.width = spC.width = window.innerWidth;
+            H = bgC.height = flC.height = spC.height = window.innerHeight;
             MX = W / 2; MY = H / 2;
         }
         resize();
@@ -585,6 +595,222 @@ more than you probably know.`,
             col: COLS[Math.floor(Math.random() * COLS.length)]
         }));
 
+        // ══════════════════════════════════════
+        //  FLOWER SYSTEM (10 flowers)
+        // ══════════════════════════════════════
+        const BLOOM_FRAMES = 260;
+
+        function drawPetal(x, y, len, wid, angle, c1, c2, alpha) {
+            flX.save();
+            flX.translate(x, y);
+            flX.rotate(angle);
+            const grad = flX.createLinearGradient(0, 0, 0, len);
+            grad.addColorStop(0, hexA(c1, alpha));
+            grad.addColorStop(0.6, hexA(c1, alpha * 0.6));
+            grad.addColorStop(1, hexA(c2, 0));
+            flX.beginPath();
+            flX.moveTo(0, 0);
+            flX.bezierCurveTo(wid, len * 0.22, wid * 1.15, len * 0.65, 0, len);
+            flX.bezierCurveTo(-wid * 1.15, len * 0.65, -wid, len * 0.22, 0, 0);
+            flX.closePath();
+            flX.fillStyle = grad;
+            flX.fill();
+            // shimmer vein
+            flX.beginPath();
+            flX.moveTo(0, len * 0.05);
+            flX.quadraticCurveTo(wid * 0.12, len * 0.5, 0, len * 0.92);
+            flX.strokeStyle = hexA('#ffffff', alpha * 0.22);
+            flX.lineWidth = 0.9;
+            flX.stroke();
+            flX.restore();
+        }
+
+        function drawLeafF(x, y, len, wid, angle, alpha) {
+            flX.save();
+            flX.translate(x, y);
+            flX.rotate(angle);
+            const grad = flX.createLinearGradient(0, 0, 0, len);
+            grad.addColorStop(0, `rgba(110,231,183,${alpha})`);
+            grad.addColorStop(0.5, `rgba(52,211,153,${alpha * 0.75})`);
+            grad.addColorStop(1, `rgba(16,185,129,0)`);
+            flX.beginPath();
+            flX.moveTo(0, 0);
+            flX.bezierCurveTo(wid, len * 0.28, wid * 0.75, len * 0.72, 0, len);
+            flX.bezierCurveTo(-wid * 0.75, len * 0.72, -wid, len * 0.28, 0, 0);
+            flX.closePath();
+            flX.fillStyle = grad;
+            flX.fill();
+            flX.restore();
+        }
+
+        function drawStemF(x, y, len, alpha) {
+            const grad = flX.createLinearGradient(x, y, x, y + len);
+            grad.addColorStop(0, `rgba(52,211,153,${alpha})`);
+            grad.addColorStop(1, `rgba(16,185,129,${alpha * 0.3})`);
+            flX.beginPath();
+            flX.moveTo(x, y);
+            flX.quadraticCurveTo(x - 14, y + len * 0.55, x - 6, y + len);
+            flX.strokeStyle = grad;
+            flX.lineWidth = 4 * alpha;
+            flX.lineCap = 'round';
+            flX.stroke();
+        }
+
+        function easeIO(x) { return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2; }
+
+        const FLOWERS = [
+            { getX: () => MX, getY: () => MY, scale: 1, bloomDelay: 0, stemLen: 140,
+              layers: [
+                { count: 8, lenBase: 130, wid: 36, c1: '#e879f9', c2: '#c084fc', offset: 0 },
+                { count: 7, lenBase: 100, wid: 28, c1: '#f9a8d4', c2: '#e879f9', offset: Math.PI / 8 },
+                { count: 6, lenBase: 68, wid: 20, c1: '#fde68a', c2: '#f9a8d4', offset: 0 },
+                { count: 5, lenBase: 42, wid: 13, c1: '#ffffff', c2: '#fde68a', offset: Math.PI / 10 },
+              ], glow: '255,255,220', glow2: '253,230,138', glow3: '249,168,212', dot: '255,245,180',
+              leaves: [{ oX: -4, oY: 80, l: 60, w: 18, a: Math.PI * 0.35, sw: 0 }, { oX: -4, oY: 110, l: 45, w: 14, a: -Math.PI * 0.45, sw: 1 }]
+            },
+            { getX: () => MX - W * 0.28, getY: () => MY - H * 0.15, scale: 0.55, bloomDelay: 60, stemLen: 100,
+              layers: [
+                { count: 7, lenBase: 120, wid: 34, c1: '#818cf8', c2: '#6366f1', offset: 0 },
+                { count: 6, lenBase: 88, wid: 24, c1: '#a78bfa', c2: '#818cf8', offset: Math.PI / 7 },
+                { count: 5, lenBase: 58, wid: 17, c1: '#c4b5fd', c2: '#a78bfa', offset: 0 },
+                { count: 4, lenBase: 36, wid: 11, c1: '#ede9fe', c2: '#c4b5fd', offset: Math.PI / 8 },
+              ], glow: '237,233,254', glow2: '196,181,253', glow3: '129,140,248', dot: '224,220,255',
+              leaves: [{ oX: -3, oY: 55, l: 40, w: 12, a: Math.PI * 0.4, sw: 0.5 }, { oX: 2, oY: 75, l: 32, w: 10, a: -Math.PI * 0.38, sw: 1.5 }]
+            },
+            { getX: () => MX + W * 0.3, getY: () => MY + H * 0.05, scale: 0.48, bloomDelay: 120, stemLen: 90,
+              layers: [
+                { count: 7, lenBase: 115, wid: 32, c1: '#fb7185', c2: '#f43f5e', offset: 0 },
+                { count: 6, lenBase: 82, wid: 22, c1: '#fda4af', c2: '#fb7185', offset: Math.PI / 6 },
+                { count: 5, lenBase: 55, wid: 16, c1: '#fecdd3', c2: '#fda4af', offset: 0 },
+                { count: 4, lenBase: 34, wid: 10, c1: '#fff1f2', c2: '#fecdd3', offset: Math.PI / 9 },
+              ], glow: '255,241,242', glow2: '253,164,175', glow3: '251,113,133', dot: '255,228,230',
+              leaves: [{ oX: 3, oY: 50, l: 36, w: 11, a: Math.PI * 0.32, sw: 0.8 }, { oX: -2, oY: 68, l: 28, w: 9, a: -Math.PI * 0.42, sw: 1.8 }]
+            },
+            { getX: () => MX - W * 0.22, getY: () => MY + H * 0.22, scale: 0.42, bloomDelay: 180, stemLen: 80,
+              layers: [
+                { count: 6, lenBase: 110, wid: 30, c1: '#fbbf24', c2: '#f59e0b', offset: 0 },
+                { count: 5, lenBase: 78, wid: 20, c1: '#fcd34d', c2: '#fbbf24', offset: Math.PI / 5 },
+                { count: 5, lenBase: 52, wid: 15, c1: '#fde68a', c2: '#fcd34d', offset: 0 },
+                { count: 4, lenBase: 32, wid: 10, c1: '#fefce8', c2: '#fde68a', offset: Math.PI / 8 },
+              ], glow: '254,252,232', glow2: '253,230,138', glow3: '251,191,36', dot: '255,249,196',
+              leaves: [{ oX: -3, oY: 45, l: 32, w: 10, a: Math.PI * 0.36, sw: 0.3 }, { oX: 2, oY: 60, l: 26, w: 8, a: -Math.PI * 0.4, sw: 1.2 }]
+            },
+            { getX: () => MX + W * 0.25, getY: () => MY - H * 0.22, scale: 0.38, bloomDelay: 100, stemLen: 75,
+              layers: [
+                { count: 6, lenBase: 105, wid: 28, c1: '#2dd4bf', c2: '#14b8a6', offset: 0 },
+                { count: 5, lenBase: 74, wid: 19, c1: '#5eead4', c2: '#2dd4bf', offset: Math.PI / 6 },
+                { count: 5, lenBase: 48, wid: 14, c1: '#99f6e4', c2: '#5eead4', offset: 0 },
+                { count: 4, lenBase: 30, wid: 9, c1: '#ccfbf1', c2: '#99f6e4', offset: Math.PI / 9 },
+              ], glow: '204,251,241', glow2: '153,246,228', glow3: '45,212,191', dot: '204,251,241',
+              leaves: [{ oX: -2, oY: 42, l: 28, w: 9, a: Math.PI * 0.38, sw: 0.7 }, { oX: 3, oY: 56, l: 22, w: 7, a: -Math.PI * 0.35, sw: 1.4 }]
+            },
+            { getX: () => MX + W * 0.18, getY: () => MY + H * 0.25, scale: 0.35, bloomDelay: 200, stemLen: 70,
+              layers: [
+                { count: 6, lenBase: 100, wid: 26, c1: '#d8b4fe', c2: '#a78bfa', offset: 0 },
+                { count: 5, lenBase: 70, wid: 18, c1: '#e9d5ff', c2: '#d8b4fe', offset: Math.PI / 6 },
+                { count: 5, lenBase: 46, wid: 13, c1: '#f3e8ff', c2: '#e9d5ff', offset: 0 },
+                { count: 4, lenBase: 28, wid: 8, c1: '#faf5ff', c2: '#f3e8ff', offset: Math.PI / 7 },
+              ], glow: '250,245,255', glow2: '233,213,255', glow3: '216,180,254', dot: '243,232,255',
+              leaves: [{ oX: -3, oY: 40, l: 26, w: 8, a: Math.PI * 0.33, sw: 0.9 }, { oX: 2, oY: 52, l: 20, w: 7, a: -Math.PI * 0.44, sw: 1.6 }]
+            },
+            { getX: () => MX - W * 0.35, getY: () => MY + H * 0.05, scale: 0.32, bloomDelay: 150, stemLen: 65,
+              layers: [
+                { count: 6, lenBase: 95, wid: 25, c1: '#e879f9', c2: '#d946ef', offset: 0 },
+                { count: 5, lenBase: 66, wid: 17, c1: '#f0abfc', c2: '#e879f9', offset: Math.PI / 5 },
+                { count: 4, lenBase: 44, wid: 12, c1: '#f5d0fe', c2: '#f0abfc', offset: 0 },
+                { count: 4, lenBase: 26, wid: 8, c1: '#fae8ff', c2: '#f5d0fe', offset: Math.PI / 8 },
+              ], glow: '250,232,255', glow2: '245,208,254', glow3: '232,121,249', dot: '250,232,255',
+              leaves: [{ oX: -2, oY: 38, l: 24, w: 8, a: Math.PI * 0.34, sw: 0.4 }, { oX: 2, oY: 50, l: 19, w: 6, a: -Math.PI * 0.41, sw: 1.1 }]
+            },
+            { getX: () => MX + W * 0.02, getY: () => MY - H * 0.3, scale: 0.34, bloomDelay: 140, stemLen: 68,
+              layers: [
+                { count: 6, lenBase: 98, wid: 26, c1: '#38bdf8', c2: '#0ea5e9', offset: 0 },
+                { count: 5, lenBase: 68, wid: 18, c1: '#7dd3fc', c2: '#38bdf8', offset: Math.PI / 6 },
+                { count: 4, lenBase: 44, wid: 12, c1: '#bae6fd', c2: '#7dd3fc', offset: 0 },
+                { count: 4, lenBase: 26, wid: 8, c1: '#e0f2fe', c2: '#bae6fd', offset: Math.PI / 8 },
+              ], glow: '224,242,254', glow2: '186,230,253', glow3: '56,189,248', dot: '224,242,254',
+              leaves: [{ oX: -2, oY: 38, l: 24, w: 8, a: Math.PI * 0.37, sw: 0.6 }, { oX: 2, oY: 50, l: 18, w: 6, a: -Math.PI * 0.39, sw: 1.3 }]
+            },
+            { getX: () => MX - W * 0.05, getY: () => MY + H * 0.32, scale: 0.3, bloomDelay: 220, stemLen: 60,
+              layers: [
+                { count: 6, lenBase: 92, wid: 24, c1: '#fb923c', c2: '#f97316', offset: 0 },
+                { count: 5, lenBase: 64, wid: 16, c1: '#fdba74', c2: '#fb923c', offset: Math.PI / 5 },
+                { count: 4, lenBase: 42, wid: 11, c1: '#fed7aa', c2: '#fdba74', offset: 0 },
+                { count: 4, lenBase: 24, wid: 7, c1: '#ffedd5', c2: '#fed7aa', offset: Math.PI / 7 },
+              ], glow: '255,237,213', glow2: '254,215,170', glow3: '251,146,60', dot: '255,237,213',
+              leaves: [{ oX: -2, oY: 34, l: 22, w: 7, a: Math.PI * 0.35, sw: 0.5 }, { oX: 2, oY: 46, l: 17, w: 6, a: -Math.PI * 0.43, sw: 1.0 }]
+            },
+            { getX: () => MX + W * 0.38, getY: () => MY - H * 0.08, scale: 0.28, bloomDelay: 170, stemLen: 55,
+              layers: [
+                { count: 5, lenBase: 88, wid: 22, c1: '#34d399', c2: '#10b981', offset: 0 },
+                { count: 5, lenBase: 60, wid: 15, c1: '#6ee7b7', c2: '#34d399', offset: Math.PI / 5 },
+                { count: 4, lenBase: 38, wid: 10, c1: '#a7f3d0', c2: '#6ee7b7', offset: 0 },
+                { count: 4, lenBase: 22, wid: 7, c1: '#d1fae5', c2: '#a7f3d0', offset: Math.PI / 8 },
+              ], glow: '209,250,229', glow2: '167,243,208', glow3: '52,211,153', dot: '209,250,229',
+              leaves: [{ oX: -2, oY: 32, l: 20, w: 6, a: Math.PI * 0.36, sw: 0.8 }, { oX: 2, oY: 42, l: 15, w: 5, a: -Math.PI * 0.4, sw: 1.5 }]
+            }
+        ];
+
+        function drawOneFlower(f, gt) {
+            const fx = f.getX(), fy = f.getY(), s = f.scale;
+            const lt = Math.max(0, gt - f.bloomDelay);
+            const prog = Math.min(lt / BLOOM_FRAMES, 1);
+            const p = easeIO(prog);
+            if (p <= 0) return;
+
+            // stem
+            drawStemF(fx, fy + 20 * s, f.stemLen * s * p, p);
+
+            // leaves
+            if (p > 0.3) {
+                const la = (p - 0.3) / 0.7;
+                f.leaves.forEach(lf => {
+                    drawLeafF(fx + lf.oX * s, fy + lf.oY * s, lf.l * s * la, lf.w * s * la,
+                        lf.a + Math.sin(gt * 0.02 + lf.sw) * 0.03, la);
+                });
+            }
+
+            if (p < 0.15) return;
+            const fe = (p - 0.15) / 0.85;
+
+            // petals
+            f.layers.forEach((layer, li) => {
+                const ld = li * 0.18;
+                const lp = Math.max(0, Math.min(1, (fe - ld) / (1 - ld)));
+                const eL = easeIO(lp);
+                if (eL <= 0) return;
+                for (let i = 0; i < layer.count; i++) {
+                    const angle = (i / layer.count) * Math.PI * 2 + layer.offset + gt * 0.003 * (li % 2 === 0 ? 1 : -1);
+                    drawPetal(fx, fy, layer.lenBase * s * eL, layer.wid * s * eL, angle, layer.c1, layer.c2, eL * 0.92);
+                }
+            });
+
+            // center glow
+            if (fe > 0.3) {
+                const ga = (fe - 0.3) / 0.7;
+                const pulse = 1 + Math.sin(gt * 0.06) * 0.08;
+                const R = 30 * s * ga * pulse;
+                const rg = flX.createRadialGradient(fx, fy, 0, fx, fy, R);
+                rg.addColorStop(0, `rgba(${f.glow},${ga * 0.98})`);
+                rg.addColorStop(0.4, `rgba(${f.glow2},${ga * 0.8})`);
+                rg.addColorStop(0.75, `rgba(${f.glow3},${ga * 0.4})`);
+                rg.addColorStop(1, `rgba(${f.glow3},0)`);
+                flX.beginPath();
+                flX.arc(fx, fy, R, 0, Math.PI * 2);
+                flX.fillStyle = rg;
+                flX.fill();
+                const dc = Math.round(8 * s) || 4;
+                for (let i = 0; i < dc; i++) {
+                    const a = (i / dc) * Math.PI * 2 + gt * 0.04;
+                    const r = 12 * s * ga * pulse;
+                    flX.beginPath();
+                    flX.arc(fx + Math.cos(a) * r, fy + Math.sin(a) * r, 2 * s * ga, 0, Math.PI * 2);
+                    flX.fillStyle = `rgba(${f.dot},${ga * 0.9})`;
+                    flX.fill();
+                }
+            }
+        }
+
         let bT = 0;
         (function bgLoop() {
             bT++;
@@ -596,6 +822,10 @@ more than you probably know.`,
             rg.addColorStop(1, 'rgba(0,0,0,0)');
             bgX.fillStyle = rg;
             bgX.fillRect(0, 0, W, H);
+
+            // Draw flowers
+            flX.clearRect(0, 0, W, H);
+            FLOWERS.forEach(f => drawOneFlower(f, bT));
 
             spX.clearRect(0, 0, W, H);
             sparks.forEach(s => {
